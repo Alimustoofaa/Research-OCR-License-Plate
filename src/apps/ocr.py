@@ -96,7 +96,6 @@ class Ocr:
 		boxes = res_detection['boxes'].astype(int)
 
 		# Char recognition
-		print(res_detection)
 		result_recognition = list()
 		for box in boxes:
 			x_min, y_min, x_max, y_max = box
