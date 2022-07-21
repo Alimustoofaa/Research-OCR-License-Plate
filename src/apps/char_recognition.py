@@ -85,7 +85,7 @@ class CharRecognition:
                 file_size   = model_config['file_size'],
                 unzip       = False
             )
-        else: print('Load model')
+        else: print('Load model char recognition')
 
     def __load_model(self) -> nn.Module:
         '''

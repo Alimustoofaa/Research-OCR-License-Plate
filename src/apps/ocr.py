@@ -1,17 +1,19 @@
 import cv2
-from configs.models import *
 import numpy as np
 
 class Ocr:
-	def __init__(self, detection:str = None, recog:str = None) -> None:
-		self.detection  = detection
-		self.recog      = recog
-		if detection:
-			from char_detection import CharDetection
-			self.detection_model = CharDetection(model_name=detection, classes=['text'])
-		if recog:
-			from char_recognition import CharRecognition
-			self.recog_model = CharRecognition(model_name=recog)
+	def __init__(self, root_path_model:str, 
+		detection_config:dict = None, recognition_config:dict = None) -> None:
+		self.detection_config	= detection_config
+		self.recognition_config = recognition_config
+		if detection_config:
+			from .char_detection import CharDetection
+			self.detection_model = CharDetection(
+				root_path=root_path_model, model_config=detection_config)
+		if recognition_config:
+			from .char_recognition import CharRecognition
+			self.recog_model = CharRecognition(
+				root_path=root_path_model, model_config=recognition_config)
 
 	def char_detection(self, image:np.array, image_size:int = 244, 
 		threshold:float = 0.5, boxes_ori:bool = True, det_sorted:bool = True) -> dict:
@@ -27,7 +29,7 @@ class Ocr:
 			- result: {'boxes': np.array, 'confidences': np.array, 'labels': np.array}
 		'''
 		# assert error if model is not loaded
-		assert self.detection, 'Model is not loaded'
+		assert self.detection_config, 'Model is not loaded'
 
 		result_det = self.detection_model.detect(image, image_size, 
 						boxes_ori, threshold, sorted=det_sorted)
@@ -42,7 +44,7 @@ class Ocr:
 			- result: {'text': str, 'conf': float}
 		'''
 		# assert error if model is not loaded
-		assert self.recog, 'Model is not loaded'
+		assert self.recognition_config, 'Model is not loaded'
 
 		return self.recog_model.recognition(image)
 
@@ -118,9 +120,23 @@ class Ocr:
 		return result
 
 if __name__ == '__main__':
+	import os
+	import cv2
+	import sys
 	import glob
-	ocr = Ocr(detection='./models/text_detection.ali', recog='./models/text_recognition.ali')
-	for i in glob.glob('/Users/alimustofa/Halotec/Datasets/JASAMARGA/REPORT/LPR/old_images/*.jpg'):
+
+	SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+	sys.path.append(os.path.dirname(SCRIPT_DIR))
+	from configs.models import *
+
+	root_model 		= DIRECTORY_MODEL
+	config_det 		= MODELS['char_detection']
+	config_recog 	= MODELS['char_recognition']
+
+	ocr = Ocr(root_path_model=root_model, 
+		detection_config=config_det, recognition_config=config_recog)
+
+	for i in glob.glob('/Users/alimustofa/Halotec/Datasets/JASAMARGA/REPORT/LPR/old_images/A122_1657688221.jpg'):
 		image = cv2.imread(i)
 	
 		result = ocr.ocr(image, output_type='advanced', det_threshold=0.9)

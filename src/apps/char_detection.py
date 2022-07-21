@@ -28,7 +28,7 @@ class CharDetection:
         self.model_name     = f'{root_path}/{model_config["filename"]}'
         self.classes        = model_config['classes']
         self.device         = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-        self.__check_model()
+        self.__check_model(root_path, model_config)
         self.model          = self.__load_model()
 
     def __check_model(self, root_path:str, model_config:dict) -> None:
@@ -40,7 +40,7 @@ class CharDetection:
                 file_size   = model_config['file_size'],
                 unzip       = False
             )
-        else: print('Load model')
+        else: print('Load model char detection')
 
     @staticmethod
     def __image_transform(image) -> torch.Tensor:

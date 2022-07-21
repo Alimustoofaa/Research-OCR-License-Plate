@@ -12,14 +12,14 @@ DIRECTORY_LOGGER        = os.path.expanduser('~/.Halotec/logger')
 MODELS = {
 	'char_recognition' : {
 		'filename'  : 'char_recognition.ali',
-        'classes'   :  string.digits+string.ascii_uppercase,
-		'url'       : 'https://huggingface.co/spaces/Alimustoofaa/ocr-license-plate-indonesia/resolve/main/saved_model/models.zip',
-		'file_size' : 8326131
+        'classes'   : string.digits+string.ascii_uppercase,
+		'url'       : 'https://github.com/Alimustoofaa/Research-OCR-License-Plate/releases/download/recognition/text_recognition.ali',
+		'file_size' : 592694
 	},
 	'char_detection' : {
-		'filename': 'char_detection.ali',
-        'classes': ['text'],
-		'url' : 'https://github.com/Alimustoofaa/1-PlateDetection/releases/download/plate_detection_v2/plate_detection_v2.pt',
-		'file_size' : 14753191
+		'filename'	: 'char_detection.ali',
+        'classes'	: ['text'],
+		'url' 		: 'https://github.com/Alimustoofaa/Research-OCR-License-Plate/releases/download/detection/text_detection.ali',
+		'file_size' : 165726259
 	},
 }
