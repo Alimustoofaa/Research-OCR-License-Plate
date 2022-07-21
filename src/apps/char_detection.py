@@ -25,14 +25,16 @@ class CharDetection:
             - root_path:str ->  root of path model
             - model_config:dict -> config of model {filename, classes, url, file_size}
         '''
+        self.root_path      = root_path
+        self.model_config   = model_config
         self.model_name     = f'{root_path}/{model_config["filename"]}'
         self.classes        = model_config['classes']
         self.device         = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-        self.__check_model(root_path, model_config)
         self.model          = self.__load_model()
 
-    def __check_model(self, root_path:str, model_config:dict) -> None:
-        if not os.path.isfile(self.model_name):
+    @staticmethod
+    def __check_model(root_path:str, model_config:dict) -> None:
+        if not os.path.isfile(f'{root_path}/{model_config["filename"]}'):
             download_and_unzip_model(
                 root_dir    = root_path,
                 name        = model_config['filename'],
@@ -47,6 +49,7 @@ class CharDetection:
         return transforms.Compose([transforms.ToTensor()])(image)
 
     def __load_model(self) -> torch.nn.Module:
+        self.__check_model(self.root_path, self.model_config)
         model = self.__fasterrcnn_resnet50_fpn()
         model.load_state_dict(torch.load(self.model_name, map_location=self.device), False)
         model.to(self.device)
