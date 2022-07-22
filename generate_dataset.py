@@ -1,6 +1,7 @@
 import cv2
 import glob
 import json
+import time
 import base64
 import argparse
 from pathlib import Path
@@ -68,8 +69,7 @@ def generate_dataset(path_image, output_json):
         with open(output_json+filename.replace('.jpg', '.json'), 'w', encoding='utf-8') as f:
             json.dump(labelme, f, ensure_ascii=False, indent=4)
             print(f'Done writing {i.replace(".jpg", ".json")}')
-
-
+    time.sleep(0.1)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate dataset')
