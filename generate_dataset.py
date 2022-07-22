@@ -1,4 +1,3 @@
-from importlib.resources import path
 import cv2
 import glob
 import json
