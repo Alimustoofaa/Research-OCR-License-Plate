@@ -1,19 +1,27 @@
-'''
+"""
 @Author     : Ali Mustofa HALOTEC
 @Module     : Character Recognition Neural Network
 @Created on : 20 Jul 2022
-'''
+"""
 #!/usr/bin/env python3
 # Path: src/apps/char_recognition.py
 
 import os
+from time import time
 import cv2
+import sys
 import numpy as np
 from PIL import Image
-from src.utils.utils import download_and_unzip_model
 import torch
 import torch.nn as nn
 from torchvision import transforms
+
+try:
+    from src.utils.utils import download_and_unzip_model
+except ImportError:
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    sys.path.append(os.path.dirname(SCRIPT_DIR))
+    from utils.utils import download_and_unzip_model
 
 class _NeuralNetwork(nn.Module):
     def __init__(self, num_classes):
@@ -76,6 +84,7 @@ class CharRecognition:
         self.classes    = model_config['classes']
         self.device     = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.model      = self.__load_model()
+        self.tracked    = self.__jic_trace(self.model)
 
     @staticmethod
     def __check_model(root_path:str, model_config:dict) -> None:
@@ -100,7 +109,16 @@ class CharRecognition:
         model.load_state_dict(torch.load(self.model_name, map_location=self.device))
         model.to(self.device)
         return model.eval()
-
+    
+    @staticmethod
+    def __jic_trace(model:nn.Module) -> torch.jit.TracedModule:
+        '''
+        JIT tracing
+        @params:
+            - model: nn.Module
+        '''
+        return torch.jit.trace(model, torch.rand(1, 3, 31, 31))
+        
     @staticmethod
     def __image_transform(image) -> torch.Tensor:
         return  transforms.Compose([
@@ -125,22 +143,27 @@ class CharRecognition:
             image = image.view(1, 3, 31, 31).cuda()
         else:
             image = image.view(1, 3, 31, 31)
-        
-        with torch.no_grad():
-            output = self.model(image)
-
+        print(image.shape)
+        output = self.tracked(image)
         output = nn.functional.log_softmax(output, dim=1)
         output = torch.exp(output)
         prob, top_class = torch.topk(output, k=1, dim=1)
-        res_class  = self.classes[top_class.cpu().numpy()[0][0]]
-        res_prob   = round((prob.cpu().numpy()[0][0]), 2)
+        res_class  = self.classes[top_class.cpu().item()]
+        res_prob   = round((prob.cpu().item()), 2)
         return {
             'text': res_class,
             'conf': res_prob
         }
 
 if __name__ == '__main__':
-    char_recog = CharRecognition('./models/text_recognition.ali')
-    image = cv2.imread('./images/1_10043.jpg')
+    from configs.models import *
+
+    root_model 		= DIRECTORY_MODEL
+    config_det 		= MODELS['char_recognition']
+
+    char_recog = CharRecognition(root_path=root_model, model_config=config_det)
+    start_time = time()
+    image = cv2.imread('/Users/alimustofa/Halotec/Source Code/research/ocr/from_scratch/images/2_10083.jpg')
     result = char_recog.recognition(image)
+    print(time()-start_time)
     print(result)
